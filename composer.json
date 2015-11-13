@@ -1,0 +1,20 @@
+{
+    "name": "ericjgagnon/dumper",
+    "description": "HTML variable dumper for PHP",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ericjgagnon",
+            "email": "gagnonericj@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Wicked\\Dumper\\": "src/",
+            "Wicked\\Test\\": ""
+        }
+    }
+}
