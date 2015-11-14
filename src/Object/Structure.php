@@ -7,37 +7,37 @@ class Structure
     /**
      * @var string
      */
-    public $namespace;
+    private $namespace;
 
     /**
      * @var string
      */
-    public $name;
+    private $name;
 
     /**
      * @var bool
      */
-    public $final;
+    private $final;
 
     /**
      * @var bool
      */
-    public $abstract;
+    private $abstract;
 
     /**
      * @var string
      */
-    public $parent;
+    private $parent;
 
     /**
      * @var string|array
      */
-    public $interfaces;
+    private $interfaces;
 
     /**
      * @var string|array
      */
-    public $traits;
+    private $traits;
 
     /**
      * @var Property[]

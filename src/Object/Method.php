@@ -7,32 +7,32 @@ class Method
     /**
      * @var string
      */
-    public $name;
+    private $name;
 
     /**
      * @var string
      */
-    public $visibility;
+    private $visibility;
 
     /**
      * @var bool
      */
-    public $final;
+    private $final;
 
     /**
      * @var bool
      */
-    public $static;
+    private $static;
 
     /**
      * @var bool
      */
-    public $abstract;
+    private $abstract;
 
     /**
      * @var \Wicked\Dumper\Data|Structure
      */
-    public $parameters;
+    private $parameters;
 
     /**
      * @return string

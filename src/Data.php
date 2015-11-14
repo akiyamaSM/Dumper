@@ -7,27 +7,27 @@ class Data
     /**
      * @var string
      */
-    public $name;
+    private $name;
 
     /**
      * @var string
      */
-    public $type;
+    private $type;
 
     /**
      * @var mixed
      */
-    public $value;
+    private $value;
 
     /**
      * @var string
      */
-    public $length;
+    private $length;
 
     /**
      * @var bool
      */
-    public $constant = false;
+    private $constant = false;
 
     /**
      * @return string

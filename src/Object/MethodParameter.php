@@ -7,12 +7,12 @@ class MethodParameter
     /**
      * @var string
      */
-    public $name;
+    private $name;
 
     /**
      * @var mixed
      */
-    public $defaultValue;
+    private $defaultValue;
 
     /**
      * @var bool
@@ -22,37 +22,37 @@ class MethodParameter
     /**
      * @var string
      */
-    public $typeHintedClass;
+    private $typeHintedClass;
 
     /**
      * @var int
      */
-    public $position;
+    private $position;
 
     /**
      * @var string
      */
-    public $declaringClass;
+    private $declaringClass;
 
     /**
      * @var string
      */
-    public $declaringFunction;
+    private $declaringFunction;
 
     /**
      * @var bool
      */
-    public $expectingArray;
+    private $expectingArray;
 
     /**
      * @var bool
      */
-    public $expectingCallable;
+    private $expectingCallable;
 
     /*
      * @var bool
      */
-    public $expectingReference;
+    private $expectingReference;
 
     /**
      * @var

@@ -1,4 +1,6 @@
-<?php namespace Wicked\Dumper;
+<?php
+
+namespace Wicked\Dumper;
 
 use ReflectionObject;
 use Reflector;
@@ -6,14 +8,17 @@ use Wicked\Dumper\Object\Method;
 use Wicked\Dumper\Object\MethodParameter;
 use Wicked\Dumper\Object\Property;
 use Wicked\Dumper\Object\Structure;
+use Wicked\Dumper\Collection\Collection;
+use Wicked\Dumper\Collection\Item;
 
 class Cloner
 {
-
-
     /**
+     * Clone the given data based on whether it is an object, array, or other (int, string, double, etc...).
+     *
      * @param $data
-     * @return Structure|Data
+     *
+     * @return Structure|Collection|Data
      */
     public function cloneData($data)
     {
@@ -21,18 +26,26 @@ class Cloner
         if (is_object($data)) {
             $clone = $this->buildStructure($data);
         } elseif (is_array($data)) {
-
+            $clone = $this->buildCollection($data);
         } else {
             $clone = new Data();
             $clone->setType(gettype($data));
             $clone->setValue($data);
             if (is_string($clone->getValue())) {
-                $clone->setLength($data);
+                $clone->setLength(strlen($data));
             }
         }
+
         return $clone;
     }
 
+    /**
+     * Build a new Structure (Object) from the given data.
+     *
+     * @param $object
+     *
+     * @return Structure
+     */
     private function buildStructure($object)
     {
         $classReflection = new ReflectionObject($object);
@@ -46,32 +59,35 @@ class Cloner
         $structure->setInterfaces($classReflection->getInterfaceNames());
         $structure->setTraits($classReflection->getTraitNames());
         foreach ($classReflection->getProperties() as $propertyReflection) {
-            $data = new Data();
+            $property = new Property();
             $visibility = $this->visiblity($propertyReflection);
             $propertyReflection->setAccessible(true);
 
-            $data->setName($propertyReflection->getName());
+            $property->setName($propertyReflection->getName());
             $value = $propertyReflection->getValue($object);
-            $data->setValue($value);
-            $data->setType(gettype($value));
+            if (is_object($value) || is_array($value)) {
+               $property->setValue($this->cloneData($value));
+            } else {
+                $property->setValue($value);
+            }
+            $property->setType(gettype($value));
 
             if (is_string($value)) {
-                $data->setLength($value);
+                $property->setLength($value);
             }
-
-            $property = new Property($data, $visibility, $propertyReflection->isStatic());
+            $property->setVisibility($visibility);
+            $property->setStatic($propertyReflection->isStatic());
 
             $structure->addProperty($property);
 
             $propertyReflection->setAccessible(false);
         }
         foreach ($classReflection->getConstants() as $constantName => $constantValue) {
-            $data = new Data();
-            $data->setType('constant');
-            $data->setName($constantName);
-            $data->setValue($constantValue);
-            $data->setConstant(true);
-            $property = new Property($data);
+            $property = new Property();
+            $property->setType('constant');
+            $property->setName($constantName);
+            $property->setValue($constantValue);
+            $property->setConstant(true);
             $structure->addProperty($property);
         }
 
@@ -101,11 +117,43 @@ class Cloner
             }
             $structure->addMethod($method);
         }
+
         return $structure;
     }
 
     /**
+     * Build a Collection (array) of Items from the given data.
+     *
+     * @param $data
+     *
+     * @return Collection
+     */
+    private function buildCollection($array)
+    {
+        $collection = new Collection();
+        foreach ($array as $key => $value) {
+            $item = new Item();
+            if (is_array($value)) {
+                $item->setValue($this->buildCollection($value));
+            } else {
+                $item->setValue($value);
+                $item->setType(gettype($value));
+                if ($item->getType() === 'string') {
+                    $item->setLength(strlen($value));
+                }
+            }
+            $item->setKey($key);
+            $collection->addItem($item);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Get the visibility from the Reflector.
+     *
      * @param Reflector $reflection
+     *
      * @return string
      */
     private function visiblity(Reflector $reflection)
@@ -118,7 +166,7 @@ class Cloner
                 $visibility = 'private';
             }
         }
+
         return $visibility;
     }
-
 }

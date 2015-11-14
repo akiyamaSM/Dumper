@@ -2,45 +2,20 @@
 
 namespace Wicked\Dumper\Object;
 
-class Property
-{
-    /**
-     * @var \Wicked\Dumper\Data|Structure
-     */
-    public $data;
+use Wicked\Dumper\Data;
 
+class Property extends Data
+{
     /**
      * @var string
      */
-    public $visibility;
+    private $visibility;
 
     /**
      * @var bool
      */
-    public $static;
+    private $static;
 
-    public function __construct($data = null, $visibility = 'public', $static = false)
-    {
-        $this->data = $data;
-        $this->visibility = $visibility;
-        $this->static = $static;
-    }
-
-    /**
-     * @return \Wicked\Dumper\Data|Structure
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    /**
-     * @param \Wicked\Dumper\Data|Structure $data
-     */
-    public function setData($data)
-    {
-        $this->data = $data;
-    }
 
     /**
      * @return string

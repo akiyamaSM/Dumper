@@ -64,10 +64,9 @@ class Object extends ParentObject implements InYourFace
     }
 }
 
-$object = new NamespacedObject("blue", 7, true);
+$object = new NamespacedObject("blue", 7, new NamespacedObject(true, 0.8));
 $dumper = new \Wicked\Dumper\Dumper();
-
-$dumper->killDump($object);
+$dumper->killDump(false);
 ?>
 </body>
 </html>
