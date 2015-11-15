@@ -66,14 +66,14 @@ class Cloner
             $property->setName($propertyReflection->getName());
             $value = $propertyReflection->getValue($object);
             if (is_object($value) || is_array($value)) {
-               $property->setValue($this->cloneData($value));
+                $property->setValue($this->cloneData($value));
             } else {
                 $property->setValue($value);
             }
             $property->setType(gettype($value));
 
             if (is_string($value)) {
-                $property->setLength($value);
+                $property->setLength(strlen($value));
             }
             $property->setVisibility($visibility);
             $property->setStatic($propertyReflection->isStatic());
@@ -135,6 +135,8 @@ class Cloner
             $item = new Item();
             if (is_array($value)) {
                 $item->setValue($this->buildCollection($value));
+            } elseif (is_object($value)) {
+                $item->setValue($this->buildStructure($value));
             } else {
                 $item->setValue($value);
                 $item->setType(gettype($value));

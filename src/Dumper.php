@@ -2,7 +2,6 @@
 
 namespace Wicked\Dumper;
 
-use GuzzleHttp\Tests\Stream\Str;
 use Wicked\Dumper\Collection\Collection;
 use Wicked\Dumper\Collection\Item;
 use Wicked\Dumper\Object\Method;
@@ -67,39 +66,43 @@ class Dumper
      *
      * @param $data
      */
-    private function printPrimitive($data)
+    private function dumpType($data)
     {
         if ($data instanceof Property) {
+            echo sprintf(
+                '<pre>%s %s %s:',
+                $data->getVisibility(),
+                $data->getType(),
+                $data->getName()
+            );
             if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
-                echo sprintf(
-                    '<div style="color:#ffffff;background-color:#6C7A89;padding:4px 10px;margin-bottom:5px;">%s %s %s:</div>',
-                    $data->getVisibility(), $data->getType(), $data->getName()
-                );
                 $this->dumpContents($data->getValue());
             } else {
                 $this->dumpData($data);
             }
+            echo '</pre>';
         } elseif ($data instanceof Method) {
             echo sprintf(
-                '<div style="color:#ffffff;background-color:#6C7A89;padding:4px 10px;margin-bottom:5px;">%s
-                 <div style="float:right;">%s (%s)</div>
-                </div>',
+                '<pre>%s
+                 <pre>%s (%s)</pre>
+                </pre>',
                 $data->getVisibility(),
                 $data->getName(),
                 $data->getParameters() ?: '&nbsp;'
             );
+        } elseif ($data instanceof Item) {
+            echo sprintf(
+                '<pre class="child">[%s] =>',
+                $data->getKey()
+            );
+            if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
+                $this->dumpContents($data->getValue());
+            } else {
+                $this->dumpData($data);
+            }
+            echo '</pre>';
         } elseif ($data instanceof Data) {
             $this->dumpData($data);
-        } elseif ($data instanceof Item) {
-            if ($data instanceof Collection) {
-                echo sprintf(
-                    '<div style="color:#ffffff;background-color:#6C7A89;padding:4px 10px;margin-bottom:5px;">[%s] =></div>',
-                    $data->getKey()
-                );
-                $this->dumpContents($data);
-            } else {
-               $this->dumpData($data);
-            }
         }
     }
 
@@ -111,7 +114,7 @@ class Dumper
         $cloner = new Cloner();
         $clone = $cloner->cloneData($data);
         $this->dumpContents($clone);
-        exit;
+        $this->injectStyles();
     }
 
     /**
@@ -125,11 +128,14 @@ class Dumper
         if ($data instanceof Structure) {
             $this->dumpStructure($data);
         } elseif ($data instanceof Collection) {
-            echo sprintf('<div style="color:#ffffff;background-color:#6C7A89;padding:4px 10px;margin-bottom:5px;">(Array:length %s) [</div>', $data->count());
+            echo sprintf(
+                '<pre class="parent">(Array : length %s) ▼ [',
+                $data->count()
+            );
             $this->iterateOverList($data->getItems());
-            echo sprintf('<div style="color:#ffffff;background-color:#6C7A89;padding:4px 10px;margin-bottom:5px;">]</div>');
+            echo ']</pre>';
         } elseif ($data instanceof Data) {
-            $this->printPrimitive($data);
+            $this->dumpData($data);
         }
     }
 
@@ -140,49 +146,51 @@ class Dumper
      */
     private function dumpStructure(Structure $structure)
     {
-        $abstractOrFinal = ($structure->isAbstract()) ? 'abstract' : ($structure->isFinal()) ? 'final' : '';
-        echo '<div style="max-width:80%;margin-bottom:15px;">';
+        $abstractOrFinal = ($structure->isAbstract()) ? 'abstract ' : ($structure->isFinal()) ? 'final ' : chr(8);
         echo sprintf(
-            '<div style="color:#ffffff;background-color:#6C7A89;padding:4px 10px;margin-bottom:15px;">%s class %s</div>',
-            $abstractOrFinal, $structure->getNamespace() ?: $structure->getName()
+            '<pre class="parent">%sclass %s ▼ {',
+            $abstractOrFinal,
+            $structure->getNamespace() ?: $structure->getName()
         );
         foreach ($structure as $methodOrProperty) {
             $this->iterateOverList($methodOrProperty);
         }
-        echo '</div>';
+        echo '}</pre>';
     }
 
     /**
-     * Dump Data, a Property, or an Item to the screen
+     * Dump Data, a Property, or an Item to the screen.
      *
      * @param $data
      */
-    private function dumpData($data)
+    private function dumpData($data, $class = false)
     {
         echo sprintf(
-            '<div style="background-color:#6C7A89;%s;padding:4px 10px;margin-bottom:5px;">%s%s %s</div>',
-            $this->getScalarStyle($data->getType()), $data->getType(), $data->getLength() ? ' [length: '
-            .$data->getLength
-            ().']'
-            : '',
+            '<span class="%s"> %s%s %s</span>',
+            $class,
+            $data->getType(),
+            $data->getLength() ? ' [length : '.$data->getLength().']' : '',
             $data->getValue()
         );
     }
 
+    /**
+     * @param $list
+     */
     private function iterateOverList($list)
     {
-        if (is_array($list) && !empty($list)) {
-            echo '<ul>';
-            foreach ($list as $key => $value) {
-                if (is_array($value)) {
-                    $this->iterateOverList($value);
-                } else {
-                    $this->printPrimitive($value);
-                }
-            }
-            echo '</ul>';
-        } else {
-            $this->printPrimitive($list);
+        $list = (array) $list;
+        foreach ($list as $key => $value) {
+            $this->dumpType($value);
         }
+    }
+
+    private function injectStyles()
+    {
+        echo '<style>
+                .parent {
+                    cursor: pointer;
+                }
+            </style>';
     }
 }

@@ -12,6 +12,12 @@ ini_set('display_errors', '1');
 error_reporting(E_ALL);
 require_once('vendor/autoload.php');
 
+function pp($data)
+{
+    echo '<pre>';
+    print_r($data);
+    echo '</pre>';
+}
 use Wicked\Test\NamespacedObject;
 
 class ParentObject
@@ -64,9 +70,10 @@ class Object extends ParentObject implements InYourFace
     }
 }
 
-$object = new NamespacedObject("blue", 7, new NamespacedObject(true, 0.8));
+$object = new NamespacedObject("blue", [7,9,0], new NamespacedObject(true, 0.8));
 $dumper = new \Wicked\Dumper\Dumper();
-$dumper->killDump(false);
+$dumper->killDump([1, true, 'string', [5, 0.8], $object]);
 ?>
+<script src="dumper.js" type="text/javascript"></script>
 </body>
 </html>
