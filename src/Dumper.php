@@ -69,36 +69,48 @@ class Dumper
     private function dumpType($data)
     {
         if ($data instanceof Property) {
-            echo sprintf(
-                '<pre>%s %s %s:',
-                $data->getVisibility(),
-                $data->getType(),
-                $data->getName()
-            );
             if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
+                echo sprintf(
+                    '<pre class="child">%s %s %s:',
+                    $data->getVisibility(),
+                    $data->getType(),
+                    $data->getName()
+                );
                 $this->dumpContents($data->getValue());
             } else {
-                $this->dumpData($data);
+                echo sprintf(
+                    '<pre class="child">%s %s %s: %s%s %s',
+                    $data->getVisibility(),
+                    $data->getType(),
+                    $data->getName(),
+                    $data->getType(),
+                    $data->getLength() ? ' [length : '.$data->getLength().']' : '',
+                    $data->getValue()
+                );
             }
             echo '</pre>';
         } elseif ($data instanceof Method) {
             echo sprintf(
-                '<pre>%s
-                 <pre>%s (%s)</pre>
-                </pre>',
+                '<pre class="child">%s %s (%s)</pre>',
                 $data->getVisibility(),
                 $data->getName(),
                 $data->getParameters() ?: '&nbsp;'
             );
         } elseif ($data instanceof Item) {
-            echo sprintf(
-                '<pre class="child">[%s] =>',
-                $data->getKey()
-            );
             if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
+                echo sprintf(
+                    '<pre class="child">[%s] =>',
+                    $data->getKey()
+                );
                 $this->dumpContents($data->getValue());
             } else {
-                $this->dumpData($data);
+                echo sprintf(
+                    '<pre class="child">[%s] => %s%s %s',
+                    $data->getKey(),
+                    $data->getType(),
+                    $data->getLength() ? ' [length : '.$data->getLength().']' : '',
+                    $data->getValue()
+                );
             }
             echo '</pre>';
         } elseif ($data instanceof Data) {
@@ -152,9 +164,19 @@ class Dumper
             $abstractOrFinal,
             $structure->getNamespace() ?: $structure->getName()
         );
-        foreach ($structure as $methodOrProperty) {
-            $this->iterateOverList($methodOrProperty);
+
+        echo '<pre class="parent"> properties : ▼ {';
+        foreach ($structure->getProperties() as $property) {
+            $this->dumpType($property);
         }
+        echo '}</pre>';
+
+        echo '<pre class="parent"> methods : ▼ {';
+        foreach ($structure->getMethods() as $method) {
+            $this->dumpType($method);
+        }
+
+        echo '}</pre>';
         echo '}</pre>';
     }
 

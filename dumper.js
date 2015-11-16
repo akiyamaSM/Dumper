@@ -34,15 +34,11 @@
 
     //docket Toggling arrow
     function switchArrows(parent) {
-        if(parent.innerHTML.indexOf('▼') === 19) {
-            parent.innerHTML = parent.innerHTML.replaceAt(19, '▶');
+        if(parent.innerHTML.indexOf('▼') > -1) {
+            parent.innerHTML = parent.innerHTML.replace('▼', '▶');
         } else {
-            parent.innerHTML = parent.innerHTML.replaceAt(19, '▼');
+            parent.innerHTML = parent.innerHTML.replace('▶', '▼');
         }
-    }
-
-    String.prototype.replaceAt = function(index, character) {
-        return this.substr(0, index) + character + this.substr(index+character.length);
     }
 
 }(document, window));
