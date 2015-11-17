@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * (c) Eric Gagnon <gagnonericj@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Wicked\Dumper\Collection;
 
 use Countable;
@@ -7,6 +14,11 @@ use Countable;
 class Collection implements Countable
 {
 
+    /**
+     * An array of item objects
+     *
+     * @var Item[]
+     */
     private $items;
 
     /**

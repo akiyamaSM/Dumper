@@ -6,12 +6,11 @@
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
-         processIsolation="false"
+         processIsolation="true"
          stopOnError="false"
          stopOnFailure="false"
          syntaxCheck="true"
-         verbose="true"
->
+         verbose="true">
     <testsuites>
         <testsuite name="Wicked Dumper Test Suite">
             <directory suffix="Test.php">./tests</directory>

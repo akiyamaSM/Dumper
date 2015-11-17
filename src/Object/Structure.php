@@ -1,9 +1,22 @@
 <?php
 
+/*
+ * (c) Eric Gagnon <gagnonericj@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Wicked\Dumper\Object;
 
 class Structure
 {
+
+    /**
+     * @var string
+     */
+    private $id;
+
     /**
      * @var string
      */
@@ -48,6 +61,23 @@ class Structure
      * @var Method|Method[]
      */
     public $methods;
+
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
 
     /**
      * @return string
@@ -102,7 +132,10 @@ class Structure
      */
     public function getParent()
     {
-        return $this->parent;
+        if (!is_null($this->parent)) {
+            return 'extends ' .$this->parent;
+        }
+        return null;
     }
 
     /**
@@ -118,7 +151,10 @@ class Structure
      */
     public function getInterfaces()
     {
-        return $this->interfaces;
+        if(!empty($this->interfaces)) {
+           return 'implements '  . implode(', ', $this->interfaces);
+        }
+        return null;
     }
 
     /**
@@ -134,7 +170,10 @@ class Structure
      */
     public function getTraits()
     {
-        return $this->traits;
+        if (!empty($this->traits)) {
+           return implode(', ', $this->traits);
+        }
+        return 'none';
     }
 
     /**
@@ -167,6 +206,14 @@ class Structure
     }
 
     /**
+     * @return int
+     */
+    public function hasProperties()
+    {
+        return count($this->properties) > 0;
+    }
+
+    /**
      * @return Method|Method[]
      */
     public function getMethods()
@@ -188,6 +235,14 @@ class Structure
     public function addMethod(Method $method)
     {
         $this->methods[] = $method;
+    }
+
+    /**
+     * @return int
+     */
+    public function hasMethods()
+    {
+        return count($this->methods) > 0;
     }
 
     /**

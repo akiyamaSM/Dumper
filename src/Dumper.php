@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * (c) Eric Gagnon <gagnonericj@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Wicked\Dumper;
 
 use Wicked\Dumper\Collection\Collection;
@@ -10,123 +17,73 @@ use Wicked\Dumper\Object\Structure;
 
 class Dumper
 {
-    /**
-     * Array of styles to be used.
-     *
-     * @var array
-     */
-    protected $styles = [
-        'default' => 'background-color:#18171B;color:#FF8400;line-height:1.2em;font:12pxMenlo,Monaco,Consolas,
-                      monospace;word-wrap:break-word;white-space:pre-wrap;position:relative;z-index:100000;',
-        'number' => 'font-weight:bold;color:#3498db;',
-        'const' => 'font-weight:bold;',
-        'array' => 'font-weight:bold;color:#e67e22;',
-        'bool' => 'font-weight:bold;color:#9b59b6;',
-        'string' => 'font-weight:bold;color:#2ecc71;',
-        'reference' => 'color:#A0A0A0;',
-        'public' => 'color:#FFFFFF;',
-        'protected' => 'color:#FFFFFF;',
-        'private' => 'color:#FFFFFF;',
-        'meta' => 'color:#B729D9;',
-        'key' => 'color:#56DB3A;',
-        'index' => 'color:#1299DA;',
-    ];
-
-    /**
-     * @param $type
-     *
-     * @return mixed
-     */
-    private function getScalarStyle($type)
-    {
-        switch ($type) {
-            case 'string':
-                $style = 'string';
-                break;
-            case 'integer':
-            case 'double':
-                $style = 'number';
-                break;
-            case 'boolean':
-                $style = 'bool';
-                break;
-            case 'array':
-                $style = 'array';
-                break;
-            default:
-                $style = 'default';
-                break;
-        }
-
-        return $this->styles[$style];
-    }
+    private $dump;
 
     /**
      * Prints Properties, Methods, Data, Items.
      *
      * @param $data
      */
-    private function dumpType($data)
+    private function buildType($data)
     {
         if ($data instanceof Property) {
             if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
-                echo sprintf(
-                    '<pre class="child">%s %s %s:',
+                $this->dump .= sprintf(
+                    '<samp class="child">%s %s %s:',
                     $data->getVisibility(),
                     $data->getType(),
                     $data->getName()
                 );
-                $this->dumpContents($data->getValue());
+                $this->buildDump($data->getValue());
             } else {
-                echo sprintf(
-                    '<pre class="child">%s %s %s: %s%s %s',
+                $this->dump .= sprintf(
+                    '<samp class="child">%s %s %s: %s %s',
                     $data->getVisibility(),
                     $data->getType(),
                     $data->getName(),
-                    $data->getType(),
                     $data->getLength() ? ' [length : '.$data->getLength().']' : '',
                     $data->getValue()
                 );
             }
-            echo '</pre>';
+            $this->dump .= '</samp>';
         } elseif ($data instanceof Method) {
-            echo sprintf(
-                '<pre class="child">%s %s (%s)</pre>',
+            $this->dump .= sprintf(
+                '<samp class="child">%s %s (%s)</samp>',
                 $data->getVisibility(),
                 $data->getName(),
                 $data->getParameters() ?: '&nbsp;'
             );
         } elseif ($data instanceof Item) {
             if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
-                echo sprintf(
-                    '<pre class="child">[%s] =>',
+                $this->dump .= sprintf(
+                    '<samp class="child">[%s] =>',
                     $data->getKey()
                 );
-                $this->dumpContents($data->getValue());
+                $this->buildDump($data->getValue());
             } else {
-                echo sprintf(
-                    '<pre class="child">[%s] => %s%s %s',
+                $this->dump .= sprintf(
+                    '<samp class="child">[%s] => %s%s %s',
                     $data->getKey(),
                     $data->getType(),
                     $data->getLength() ? ' [length : '.$data->getLength().']' : '',
                     $data->getValue()
                 );
             }
-            echo '</pre>';
+            $this->dump .= '</samp>';
         } elseif ($data instanceof Data) {
-            $this->dumpData($data);
+            $this->buildData($data);
         }
     }
 
     /**
      * @param $data
      */
-    public function killDump($data)
+    public function dump($data)
     {
         $cloner = new Cloner();
         $clone = $cloner->cloneData($data);
-        $this->dumpContents($clone);
-        $this->injectStyles();
+        $dump = $this->buildDump($clone);
+        echo $dump;
     }
 
     /**
@@ -135,20 +92,24 @@ class Dumper
      *
      * @param $data
      */
-    private function dumpContents($data)
+    public function buildDump($data)
     {
         if ($data instanceof Structure) {
-            $this->dumpStructure($data);
+            $this->buildStructure($data);
         } elseif ($data instanceof Collection) {
-            echo sprintf(
-                '<pre class="parent">(Array : length %s) ▼ [',
+            $isParent = ($data->count()) ? 'parent' : '';
+            $this->dump .= sprintf(
+                '<samp class="%s">(Array : length %s) <span class="arrow"></span> [',
+                $isParent,
                 $data->count()
             );
             $this->iterateOverList($data->getItems());
-            echo ']</pre>';
+            $this->dump .= ']</samp>';
         } elseif ($data instanceof Data) {
-            $this->dumpData($data);
+            $this->buildData($data);
         }
+
+        return $this->dump;
     }
 
     /**
@@ -156,28 +117,38 @@ class Dumper
      *
      * @param Structure $structure
      */
-    private function dumpStructure(Structure $structure)
+    private function buildStructure(Structure $structure)
     {
-        $abstractOrFinal = ($structure->isAbstract()) ? 'abstract ' : ($structure->isFinal()) ? 'final ' : chr(8);
-        echo sprintf(
-            '<pre class="parent">%sclass %s ▼ {',
+        $abstractOrFinal = ($structure->isAbstract()) ? 'abstract ' : ($structure->isFinal()) ? 'final ' : '';
+        $this->dump .= sprintf(
+            '<samp class="parent">%sclass %s %s %s<span class="arrow"></span> {',
             $abstractOrFinal,
-            $structure->getNamespace() ?: $structure->getName()
+            $structure->getNamespace() ?: $structure->getName(),
+            $structure->getParent(),
+            $structure->getInterfaces()
         );
 
-        echo '<pre class="parent"> properties : ▼ {';
-        foreach ($structure->getProperties() as $property) {
-            $this->dumpType($property);
-        }
-        echo '}</pre>';
+        $this->dump .= sprintf('<samp class="child">id : %s</samp>', $structure->getId());
 
-        echo '<pre class="parent"> methods : ▼ {';
-        foreach ($structure->getMethods() as $method) {
-            $this->dumpType($method);
+        $this->dump .= sprintf('<samp class="child">traits : %s </samp>', $structure->getTraits());
+
+        if ($structure->hasProperties()) {
+            $this->dump .= '<samp class="parent"> properties : <span class="arrow"></span> {';
+            foreach ($structure->getProperties() as $property) {
+                $this->buildType($property);
+            }
+            $this->dump .= '}</samp>';
         }
 
-        echo '}</pre>';
-        echo '}</pre>';
+        if ($structure->hasMethods()) {
+            $this->dump .= '<samp class="parent"> methods : <span class="arrow"></span> {';
+            foreach ($structure->getMethods() as $method) {
+                $this->buildType($method);
+            }
+            $this->dump .= '}</samp>';
+        }
+
+        $this->dump .= '}</samp>';
     }
 
     /**
@@ -185,10 +156,10 @@ class Dumper
      *
      * @param $data
      */
-    private function dumpData($data, $class = false)
+    private function buildData($data, $class = false)
     {
-        echo sprintf(
-            '<span class="%s"> %s%s %s</span>',
+        $this->dump .= sprintf(
+            '<samp class="%s"> %s%s %s</samp>',
             $class,
             $data->getType(),
             $data->getLength() ? ' [length : '.$data->getLength().']' : '',
@@ -203,16 +174,7 @@ class Dumper
     {
         $list = (array) $list;
         foreach ($list as $key => $value) {
-            $this->dumpType($value);
+            $this->buildType($value);
         }
-    }
-
-    private function injectStyles()
-    {
-        echo '<style>
-                .parent {
-                    cursor: pointer;
-                }
-            </style>';
     }
 }

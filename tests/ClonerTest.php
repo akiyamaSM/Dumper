@@ -13,7 +13,17 @@ class ClonerTest extends PHPUnit_Framework_TestCase
 
         $clone = $cloner->cloneData($array);
         $this->assertInstanceOf('Wicked\Dumper\Collection\Collection', $clone);
-        $this->assertEquals(4, $clone->count());
+        $this->assertSame(4, $clone->count());
+    }
+
+    public function testBuildEmptyCollection()
+    {
+        $cloner = new Cloner();
+
+        $array = [];
+        $clone = $cloner->cloneData($array);
+        $this->assertInstanceOf('Wicked\Dumper\Collection\Collection', $clone);
+        $this->assertSame(0, $clone->count());
     }
 
     public function testBuildStructure()
@@ -24,7 +34,18 @@ class ClonerTest extends PHPUnit_Framework_TestCase
 
         $clone = $cloner->cloneData($object);
         $this->assertInstanceOf('Wicked\Dumper\Object\Structure', $clone);
-        $this->assertEquals('stdClass', $clone->getName());
+        $this->assertSame('stdClass', $clone->getName());
+    }
+
+    public function testBuildStructureException()
+    {
+        $cloner = new Cloner();
+
+        $e = new Exception('Something exceptional!');
+
+        $clone = $cloner->cloneData($e);
+        $this->assertInstanceOf('Wicked\Dumper\Object\Structure', $clone);
+        $this->assertSame('Exception', $clone->getName());
     }
 
     public function testBuildDataInteger()
@@ -35,8 +56,8 @@ class ClonerTest extends PHPUnit_Framework_TestCase
 
         $clone = $cloner->cloneData($data);
         $this->assertInstanceOf('Wicked\Dumper\Data', $clone);
-        $this->assertEquals('integer', $clone->getType());
-        $this->assertEquals(null, $clone->getLength());
+        $this->assertSame('integer', $clone->getType());
+        $this->assertSame(null, $clone->getLength());
         $this->assertFalse($clone->isConstant());
     }
 
@@ -48,8 +69,8 @@ class ClonerTest extends PHPUnit_Framework_TestCase
 
         $clone = $cloner->cloneData($data);
         $this->assertInstanceOf('Wicked\Dumper\Data', $clone);
-        $this->assertEquals('double', $clone->getType());
-        $this->assertEquals(null, $clone->getLength());
+        $this->assertSame('double', $clone->getType());
+        $this->assertSame(null, $clone->getLength());
         $this->assertFalse($clone->isConstant());
     }
 
@@ -61,8 +82,8 @@ class ClonerTest extends PHPUnit_Framework_TestCase
 
         $clone = $cloner->cloneData($data);
         $this->assertInstanceOf('Wicked\Dumper\Data', $clone);
-        $this->assertEquals('string', $clone->getType());
-        $this->assertEquals(strlen($data), $clone->getLength());
+        $this->assertSame('string', $clone->getType());
+        $this->assertSame(strlen($data), $clone->getLength());
         $this->assertFalse($clone->isConstant());
     }
 
@@ -74,8 +95,8 @@ class ClonerTest extends PHPUnit_Framework_TestCase
 
         $clone = $cloner->cloneData($data);
         $this->assertInstanceOf('Wicked\Dumper\Data', $clone);
-        $this->assertEquals('boolean', $clone->getType());
-        $this->assertEquals(null, $clone->getLength());
+        $this->assertSame('boolean', $clone->getType());
+        $this->assertSame(0, $clone->getLength());
         $this->assertFalse($clone->isConstant());
     }
 }

@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * (c) Eric Gagnon <gagnonericj@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Wicked\Dumper;
 
 class Data
@@ -66,6 +73,9 @@ class Data
      */
     public function getValue()
     {
+         if (is_bool($this->value)) {
+             return var_export($this->value, true);
+         }
         return $this->value;
     }
 
@@ -76,6 +86,16 @@ class Data
     {
         if (is_bool($value)) {
             $value = var_export($value, true);
+        } elseif (ctype_space($value)) {
+            if ($value == "\n") {
+                $value = '\\n';
+            } elseif ($value == "\r") {
+                $value = '\\r';
+            } elseif ($value == " ") {
+                $value = "\" \"";
+            } elseif ($value == "\t") {
+                $value = "\\t";
+            }
         }
         $this->value = $value;
     }

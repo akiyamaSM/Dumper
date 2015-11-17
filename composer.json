@@ -1,20 +1,24 @@
 {
     "name": "ericjgagnon/dumper",
-    "description": "HTML variable dumper for PHP",
+    "description": "HTML variable dumper for PHP >= 5.3",
+    "keywords": ["ladybug", "dumper", "dump", "var_dump", "print_r"],
+    "homepage": "https://github.com/ericjgagnon/Dumper",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "ericjgagnon",
-            "email": "gagnonericj@gmail.com"
+            "name": "Eric Gagnon",
+            "email": "gagnonericj@gmail.com",
+            "role": "Developer"
         }
     ],
     "minimum-stability": "stable",
-    "require": {},
+    "require": {
+        "php": ">=5.3.9"
+    },
     "autoload": {
         "psr-4": {
-            "Wicked\\Dumper\\": "src/",
-            "Wicked\\Test\\": ""
+            "Wicked\\Dumper\\": "src/"
         }
     }
 }

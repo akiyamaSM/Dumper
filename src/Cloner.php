@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * (c) Eric Gagnon <gagnonericj@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Wicked\Dumper;
 
 use ReflectionObject;
@@ -50,6 +57,7 @@ class Cloner
     {
         $classReflection = new ReflectionObject($object);
         $structure = new Structure();
+        $structure->setId(spl_object_hash($object));
         $structure->setNamespace($classReflection->getNamespaceName());
         $structure->setName($classReflection->getName());
         $structure->setFinal($classReflection->isFinal());
