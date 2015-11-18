@@ -24,8 +24,7 @@ A simple HTML variable dumper for PHP >= 5.3.
 
 ## TODO
 * Extensive tests on Dumper
-* Create styling
-* Inject CSS and JavaScript
+* Generate better styles
 * Visibility highlighting for object properties
 * Comments and documentation
 * I'm sure that I'm forgetting something

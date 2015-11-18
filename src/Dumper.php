@@ -17,6 +17,12 @@ use Wicked\Dumper\Object\Structure;
 
 class Dumper
 {
+
+    /**
+     * The string to be dumped to the screen
+     *
+     * @var string
+     */
     private $dump;
 
     /**
@@ -41,7 +47,7 @@ class Dumper
                     $data->getVisibility(),
                     $data->getType(),
                     $data->getName(),
-                    $data->getLength() ? ' [length : '.$data->getLength().']' : '',
+                    $data->getLength() ? ' [length : ' . $data->getLength() . ']' : '',
                     $data->getValue()
                 );
             }
@@ -56,7 +62,7 @@ class Dumper
         } elseif ($data instanceof Item) {
             if ($data->getValue() instanceof Collection || $data->getValue() instanceof Structure) {
                 $this->dump .= sprintf(
-                    '<samp class="child">[%s] =>',
+                    '<samp class="child">[%s] => ',
                     $data->getKey()
                 );
                 $this->buildDump($data->getValue());
@@ -65,7 +71,7 @@ class Dumper
                     '<samp class="child">[%s] => %s%s %s',
                     $data->getKey(),
                     $data->getType(),
-                    $data->getLength() ? ' [length : '.$data->getLength().']' : '',
+                    $data->getLength() ? ' [length : ' . $data->getLength() . ']' : '',
                     $data->getValue()
                 );
             }
@@ -76,6 +82,8 @@ class Dumper
     }
 
     /**
+     * Dumps the given data to the browser
+     *
      * @param $data
      */
     public function dump($data)
@@ -84,6 +92,7 @@ class Dumper
         $clone = $cloner->cloneData($data);
         $dump = $this->buildDump($clone);
         echo $dump;
+        $this->injectJSAndStyles();
     }
 
     /**
@@ -133,7 +142,7 @@ class Dumper
         $this->dump .= sprintf('<samp class="child">traits : %s </samp>', $structure->getTraits());
 
         if ($structure->hasProperties()) {
-            $this->dump .= '<samp class="parent"> properties : <span class="arrow"></span> {';
+            $this->dump .= '<samp class="parent child"> properties : <span class="arrow"></span> {';
             foreach ($structure->getProperties() as $property) {
                 $this->buildType($property);
             }
@@ -141,7 +150,7 @@ class Dumper
         }
 
         if ($structure->hasMethods()) {
-            $this->dump .= '<samp class="parent"> methods : <span class="arrow"></span> {';
+            $this->dump .= '<samp class="parent child"> methods : <span class="arrow"></span> {';
             foreach ($structure->getMethods() as $method) {
                 $this->buildType($method);
             }
@@ -162,19 +171,103 @@ class Dumper
             '<samp class="%s"> %s%s %s</samp>',
             $class,
             $data->getType(),
-            $data->getLength() ? ' [length : '.$data->getLength().']' : '',
+            $data->getLength() ? ' [length : ' . $data->getLength() . ']' : '',
             $data->getValue()
         );
     }
 
     /**
+     * Iterates over an array of Items building each by type
+     *
      * @param $list
      */
     private function iterateOverList($list)
     {
-        $list = (array) $list;
+        $list = (array)$list;
         foreach ($list as $key => $value) {
             $this->buildType($value);
         }
+    }
+
+    /**
+     * Add the JavaScript and CSS to the document
+     */
+    private function injectJSAndStyles()
+    {
+        $line =
+            "<script>
+    dumper = window.dumper || (function(document){
+    //Array of elements that have 'children'
+    var parents = document.getElementsByClassName('parent');
+
+    //On each parent
+    iterateWithCallback(parents, function(parent) {
+        //Add the right arrow
+        switchArrows(parent.firstElementChild);
+        //Hide its children
+        iterateWithCallback(parent.children, toggleChildVisibility);
+        //Ready the listener
+        parent.addEventListener('click', function(event) {
+            iterateWithCallback(this.children, toggleChildVisibility);
+            switchArrows(this.firstElementChild);
+            event.stopPropagation();
+        }, false);
+    });
+
+
+    /**
+     * Calls the given function passing in each object
+     *
+     * @param {object[]} objects
+     * @param {function} callback
+     */
+    function iterateWithCallback(objects, callback) {
+        Array.prototype.filter.call(objects, function(object){
+            callback(object);
+        });
+    }
+
+    /**
+     * Toggles the visibility of the given child, if it is not an arrow
+     *
+     * @param {object} child
+     */
+    function toggleChildVisibility(child) {
+        if(child.className !== 'arrow') {
+            if (child.style.display === 'none') {
+                child.style.display = 'block';
+            } else {
+                child.style.display = 'none';
+            }
+        }
+    }
+
+    /**
+     * Switches the given arrow from down to right
+     *
+     * @param {object} arrow
+     */
+    function switchArrows(arrow) {
+        if(arrow.innerHTML.indexOf('▼') > -1) {
+            arrow.innerHTML = '▶';
+        } else {
+            arrow.innerHTML = '▼';
+        }
+    }
+
+    }(document));
+    </script>
+    <style>
+        .parent {
+            cursor: pointer;
+        }
+        .arrow {
+            color: #69D2E7;
+        }
+        .child {
+            margin: 3px 0 3px 20px;
+        }
+    </style>";
+        echo $line;
     }
 }
